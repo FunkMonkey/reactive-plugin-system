@@ -1,52 +1,45 @@
 import Rx from 'rxjs';
 
+import loaders from './loaders';
+
 export default class PluginSystem {
-  constructor( data ) {
-    this.currentlyLoaded = {};
+  constructor( { data, loader } ) {
+    this.loaded = {};
+
+    if ( !loader )
+      loader = loaders.standard;
 
     this.toLoad$ = new Rx.ReplaySubject();
-    this.currentlyLoading$ = this.toLoad$;
-    this.loaded$ = this.currentlyLoading$
-      .flatMap( ( { id, fn } ) =>
-        fn( data, this )
+    this.loaded$ = this.toLoad$
+      .flatMap( loadInfo => loader( loadInfo ).first() )
+      .flatMap( ( { id, factory } ) =>
+        factory( data, this )
           .first()
-          .do( () => { this.currentlyLoaded[id] = true; } )
+          .do( () => { this.loaded[id] = true; } )
           .map( exports => ( { id, exports } ) ) )
       .publishReplay().refCount(); // TODO: use `shareReplay`
 
+    // TODO: don't forward error to console here
     this.subscription = this.loaded$.subscribe( () => {}, err => console.error( err ) );
   }
 
-  load( plugin ) {
-    this.toLoad$.next( plugin );
+  waitFor( pluginID ) {
+    return this.loaded$
+      .filter( ( { id } ) => id === pluginID )
+      .first()
+      .do( plug => console.log( 'wait for', plug ) )
+      .map( ( { exports } ) => exports );
   }
 
-  unload( plugin ) {
-    this.toUnload$.next( plugin );
+  waitForAll( pluginIDs ) {
+    return Rx.Observable.combineLatest( pluginIDs.map( this.waitFor.bind( this ) ) );
   }
+
+  load( loadInfo ) {
+    this.toLoad$.next( loadInfo );
+  }
+
+  // unload( plugin ) {
+  //   this.toUnload$.next( plugin );
+  // }
 }
-
-
-function plugin1( data, plugins ) {
-  console.log( data );
-  return Rx.Observable.of( { foo: 'myplugin' } );
-}
-
-function plugin2( data, plugins ) {
-  console.log( 'plugin2' );
-  return plugins.loaded$
-    .filter( ( { id } ) => id === 'plugin1' )
-    .first()
-    .map( ( { exports } ) => exports )
-    .map( plug => plug.foo + ' alterted' );
-}
-
-function test() {
-  const plugins = new PluginSystem( 'foobar' );
-  plugins.load( { id: 'plugin1', fn: plugin1 } );
-  plugins.load( { id: 'plugin2', fn: plugin2 } );
-
-  plugins.loaded$.subscribe( plugin => console.log( 'loaded plugin', plugin ) );
-}
-
-test();
