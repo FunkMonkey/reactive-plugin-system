@@ -1,8 +1,10 @@
 import Rx from 'rxjs';
+import _loaders from './loaders';
 
-import loaders from './loaders';
+export const loaders = _loaders;
 
-export default class PluginSystem {
+
+export class PluginSystem {
   constructor( { data, loader } ) {
     this.loaded = {};
 
@@ -13,7 +15,7 @@ export default class PluginSystem {
     this.loaded$ = this.toLoad$
       .flatMap( loadInfo => loader( loadInfo ).first() )
       .flatMap( ( { id, factory } ) =>
-        factory( data, this )
+        factory( data, this ) // TODO: also allow plain objects
           .first()
           .do( () => { this.loaded[id] = true; } )
           .map( exports => ( { id, exports } ) ) )
@@ -27,7 +29,6 @@ export default class PluginSystem {
     return this.loaded$
       .filter( ( { id } ) => id === pluginID )
       .first()
-      .do( plug => console.log( 'wait for', plug ) )
       .map( ( { exports } ) => exports );
   }
 
