@@ -22,7 +22,7 @@ export class PluginSystem {
       .publishReplay().refCount(); // TODO: use `shareReplay`
 
     // TODO: don't forward error to console here
-    this.subscription = this.loaded$.subscribe( () => {}, err => console.error( err ) );
+    this.subscription = this.loaded$.subscribe( () => {}, err => console.error( err, err.stack ) );
   }
 
   waitFor( pluginID ) {
