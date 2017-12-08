@@ -2,8 +2,8 @@ import Rx from 'rxjs';
 
 export default {
   standard: pluginInfo => Rx.Observable.of( pluginInfo ),
-  require( moduleName ) {
-    const mod = require( moduleName );
-    return Rx.Observable.of( mod.default || mod );
+  require( { id } ) {
+    const mod = require( id );
+    return Rx.Observable.of( { id, factory: mod.default || mod } );
   }
 };
