@@ -34,14 +34,14 @@
     "watch:build": "gulp watch:build"
   },
   "devDependencies": {
-    "@babel/preset-env": "7.0.0-beta.32",
-    "@babel/core": "7.0.0-beta.32",
     "eslint": "4.11.0",
     "eslint-config-funkmonkey": "0.0.1",
     "eslint-plugin-import": "2.8.0",
     "gulp": "3.9.1",
-    "gulp-babel": "8.0.0-beta.0",
-    "gulp-util": "3.0.8"
+    "gulp-typescript": "4.0.1",
+    "gulp-util": "3.0.8",
+    "typescript": "2.7.1",
+    "typescript-eslint-parser": "13.0.0"
   },
   "dependencies": {
     "rxjs": "5.4.2"

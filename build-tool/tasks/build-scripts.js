@@ -1,22 +1,22 @@
 const gulp = require( "gulp" );
-const babel = require( "gulp-babel" );
+const typescript = require( "gulp-typescript" );
 
 const onError = require( "../utils" ).onError;
 
 // const sourcemaps = require( "gulp-sourcemaps" );
 
-const SRC_GLOB =  "./src/**/*.js";
+const SRC_GLOB =  "./src/**/*.ts";
+
+var tsProject = typescript.createProject({
+    //declaration: true,
+    noImplicitAny: true
+});
+
 
 gulp.task( "build:scripts", function() {
   return gulp.src( SRC_GLOB )
     //  .pipe( sourcemaps.init() )
-    .pipe(
-      babel( {
-        presets: [[
-          '@babel/preset-env',
-          { "targets": { "node": "6.10" } }
-        ]]
-      } ) )
+    .pipe( tsProject() )
     .on( "error", onError )
     //  .pipe( sourcemaps.write( "." ) )
     .pipe( gulp.dest( "build" ) );
