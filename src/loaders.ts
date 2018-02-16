@@ -1,9 +1,10 @@
-import Rx from 'rxjs';
+import { Observable } from 'rxjs';
+import { IPluginLoadInfo } from './iplugininfo';
 
 export default {
-  standard: pluginInfo => Rx.Observable.of( pluginInfo ),
-  require( { id } ) {
+  standard: ( pluginInfo: IPluginLoadInfo ) => Observable.of( pluginInfo ),
+  require( { id }: IPluginLoadInfo ) {
     const mod = require( id );
-    return Rx.Observable.of( { id, factory: mod.default || mod } );
+    return Observable.of( { id, factory: mod.default || mod } );
   }
 };
