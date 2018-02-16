@@ -7,10 +7,7 @@ const onError = require( "../utils" ).onError;
 
 const SRC_GLOB =  "./src/**/*.ts";
 
-var tsProject = typescript.createProject({
-    //declaration: true,
-    noImplicitAny: true
-});
+var tsProject = typescript.createProject( 'tsconfig.json' );
 
 
 gulp.task( "build:scripts", function() {
