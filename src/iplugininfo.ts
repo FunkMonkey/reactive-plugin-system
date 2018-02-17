@@ -5,11 +5,11 @@ export interface IPluginFactory {
   ( data: any, plugins: PluginSystem ): Observable<any>;
 }
 
-export interface  IPluginBaseInfo {
+export interface IPluginBaseInfo {
   id: string;
 }
 
-export interface  IPluginLoadInfo extends IPluginBaseInfo {
+export interface IPluginLoadInfo extends IPluginBaseInfo {
   factory: IPluginFactory;
 }
 

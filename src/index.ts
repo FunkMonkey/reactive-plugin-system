@@ -1,10 +1,8 @@
 import { Observable, ReplaySubject, Subscriber, Subscription } from 'rxjs';
-import { IPluginBaseInfo, IPluginLoadInfo, IPlugin, IPluginFactory } from './iplugininfo';
+import { IPluginBaseInfo, IPluginLoadInfo, IPlugin } from './iplugininfo';
 import _factoryLoaders from './loaders';
 
 export const factoryLoaders = _factoryLoaders;
-
-
 
 function digestGetFactoryResult( result: Observable<IPluginLoadInfo> ) {
   // TODO: handle plain objects & promises
@@ -52,7 +50,6 @@ export interface IPluginSystemOptions {
  * Represents the plugin system
  */
 export class PluginSystem {
-
   data: any;
   getFactory: IGetFactoryCB;
   loaded: { [id: string]: IPlugin };
@@ -117,7 +114,7 @@ export class PluginSystem {
     this.loadSubscription = this.loaded$
       .subscribe( () => {}, err => console.error( err, err.stack ) );
     this.unloadSubscription = this.unloaded$
-      .subscribe( () => {}, err => console.error( err, err.stack ) )
+      .subscribe( () => {}, err => console.error( err, err.stack ) );
   }
 
   /**
@@ -135,7 +132,9 @@ export class PluginSystem {
     const plugin$ = digestFactoryResult( factory( this.data, this ) );
 
     return new Observable( ( observer: Subscriber<IPlugin> ) => {
-      const pluginInfo: IPlugin = { id, factory, exports: null, subscription: null };
+      const pluginInfo: IPlugin = {
+        id, factory, exports: null, subscription: null
+      };
 
       // subscribe and keep subscription for later unloading
       const self = this;
@@ -187,7 +186,7 @@ export class PluginSystem {
   }
 
   loadAndWaitForAll( idsOrPluginInfos: string[] | IPluginBaseInfo[] ) {
-    (idsOrPluginInfos as any[]).forEach( this.load.bind( this ) );
+    ( idsOrPluginInfos as any[] ).forEach( this.load.bind( this ) );
     return this.waitForAll( idsOrPluginInfos );
   }
 

@@ -29,19 +29,18 @@
     "url": "https://github.com/FunkMonkey/reactive-plugin-system/issues"
   },
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
-    "build": "gulp build",
-    "watch:build": "gulp watch:build"
+    "build": "tsc",
+    "watch:build": "tsc --watch"
   },
   "devDependencies": {
     "eslint": "4.11.0",
     "eslint-config-funkmonkey": "0.0.1",
     "eslint-plugin-import": "2.8.0",
-    "gulp": "3.9.1",
-    "gulp-typescript": "4.0.1",
-    "gulp-util": "3.0.8",
     "typescript": "2.7.1",
-    "typescript-eslint-parser": "13.0.0"
+    "typescript-eslint-parser": "13.0.0",
+    "@types/node": "9.4.6"
   },
   "dependencies": {
     "rxjs": "5.4.2"
