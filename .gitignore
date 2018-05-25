@@ -16,7 +16,7 @@ Thumbs.db
 # use a package.json and 'npm install' instead
 node_modules
 
-# if for whatever reason you need a specific node module to 
+# if for whatever reason you need a specific node module to
 # be included, then you can un-ignore it with a !
 #!node_modules/some_module
 
@@ -24,3 +24,4 @@ node_modules
 # Application        #
 ######################
 build
+build-docs

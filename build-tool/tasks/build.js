@@ -1,7 +1,8 @@
 var gulp = require("gulp");
 var utils = require( "../utils.js" );
 
-require( "./build-scripts" );
+require( "./build-docs" );
+//require( "./build-scripts" );
 
 gulp.task( "build", ["build:scripts"] );
 

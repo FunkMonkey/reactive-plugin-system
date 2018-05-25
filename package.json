@@ -32,12 +32,18 @@
   "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "build:docs": "gulp build:docs",
     "watch:build": "tsc --watch"
   },
   "devDependencies": {
     "eslint": "4.11.0",
     "eslint-config-funkmonkey": "0.0.1",
     "eslint-plugin-import": "2.8.0",
+    "gulp": "3.9.1",
+    "gulp-typedoc": "2.2.0",
+    "gulp-util": "3.0.8",
+    "typedoc": "0.11.1",
+    "typedoc-plugin-external-module-name": "1.1.1",
     "typescript": "2.7.1",
     "typescript-eslint-parser": "13.0.0",
     "@types/node": "9.4.6"
