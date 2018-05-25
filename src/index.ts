@@ -1,18 +1,37 @@
+/**
+ * @module PluginSystem
+ */
+
 import { Observable, ReplaySubject, Subscriber, Subscription } from 'rxjs';
 import { IPluginBaseInfo, IPluginLoadInfo, IPlugin } from './iplugininfo';
 import _factoryLoaders from './loaders';
 
+/**
+ * @hidden
+ */
 export const factoryLoaders = _factoryLoaders;
 
+/**
+ * Takes the result of a `getFactory` call and turns it into an observable
+ * @hidden
+ */
 function digestGetFactoryResult( result: Observable<IPluginLoadInfo> ) {
   // TODO: handle plain objects & promises
   return result.first();
 }
 
+/**
+ * Takes the result of a factory and turns it into an observable
+ * @hidden
+ */
 function digestFactoryResult( result: Observable<any> ) {
   return result.first();
 }
 
+/**
+ * Operator that calls the given function right before unsubscription
+ * @hidden
+ */
 function beforeUnsubscribe<T>( funcToCall: Function ) {
   return ( source$: Observable<T> ) => new Observable( ( observer: Subscriber<T> ) => {
     const subscription = source$.subscribe( observer );
@@ -23,6 +42,10 @@ function beforeUnsubscribe<T>( funcToCall: Function ) {
   } );
 }
 
+/**
+ * Retrieves a IPluginBaseInfo from a source string or object
+ * @hidden
+ */
 function stringToPluginInfo( idOrPluginInfo: string | IPluginBaseInfo ) {
   if ( typeof idOrPluginInfo === 'string' )
     return { id: idOrPluginInfo };
@@ -30,6 +53,10 @@ function stringToPluginInfo( idOrPluginInfo: string | IPluginBaseInfo ) {
   return idOrPluginInfo;
 }
 
+/**
+ * Retrieves a plugin ID from a source string or object
+ * @hidden
+ */
 function getID( idOrPluginInfo : string | IPluginBaseInfo ) {
   if ( typeof idOrPluginInfo === 'string' )
     return idOrPluginInfo;
@@ -37,12 +64,27 @@ function getID( idOrPluginInfo : string | IPluginBaseInfo ) {
   return idOrPluginInfo.id;
 }
 
+/**
+ * A callback function that asynchronously loads a factory, which in turn can be used to
+ * asynchronously instantiate the given plugin id.
+ */
 export interface IGetFactoryCB {
   ( pluginInfo: IPluginBaseInfo ): Observable<IPluginLoadInfo>;
 }
 
+/**
+ * Options for the `PluginSystem`
+ */
 export interface IPluginSystemOptions {
+  /**
+   * Shared data between all plugins
+   */
   data: any,
+
+  /**
+   * A callback function that asynchronously loads a factory, which in turn can be used to
+   * asynchronously instantiate the given plugin id.
+   */
   getFactory: IGetFactoryCB
  }
 
@@ -50,8 +92,20 @@ export interface IPluginSystemOptions {
  * Represents the plugin system
  */
 export class PluginSystem {
+  /**
+   * Shared data between all plugins
+   */
   data: any;
+
+  /**
+   * A callback function that asynchronously loads a factory, which in turn can be used to
+   * asynchronously instantiate the given plugin id.
+   */
   getFactory: IGetFactoryCB;
+
+  /**
+   * A dictionary of loaded plugins by `id`
+   */
   loaded: { [id: string]: IPlugin };
 
   /**
@@ -74,15 +128,25 @@ export class PluginSystem {
    */
   unloaded$: Observable<IPluginBaseInfo>;
 
+  /**
+   * Subscription to `loaded$`
+   * @hidden
+   */
   loadSubscription: Subscription;
+
+  /**
+   * Subscription to `unloaded$`
+   * @hidden
+   */
   unloadSubscription: Subscription;
 
   /**
    * Creates a `PluginSystem` instance.
    *
-   * @param    {}               data         Shared data that is passed to plugin factory functions
-   * @param    {getFactoryCB}   getFactory   Callback function that is used to get a plugin factory.
-   *                                         Useful to provide a way of loading the plugins.
+   * @param    data         Shared data that is passed to plugin factory functions
+   * @param    getFactory   A callback function that asynchronously loads a factory,
+   *                        which in turn can be used to asynchronously instantiate the
+   *                        given plugin id.
    */
   constructor( { data, getFactory }: IPluginSystemOptions ) {
     this.data = data;
@@ -123,11 +187,14 @@ export class PluginSystem {
    * plugins cleaning up.
    */
   destroy() {
-    // TODO: force unload of all loaded plugins?
+    // TODO: force unload of all loaded plugins? -> add param
     this.loadSubscription.unsubscribe();
     this.unloadSubscription.unsubscribe();
   }
 
+  /**
+   * @hidden
+   */
   _loadPlugin( { id, factory }: IPluginLoadInfo ) {
     const plugin$ = digestFactoryResult( factory( this.data, this ) );
 
@@ -157,8 +224,8 @@ export class PluginSystem {
 
   /**
    * Waits for a plugin and returns its exports as an Observable
-   * @param    {PluginInfo|string}   idOrPluginInfo   Plugin to wait for
-   * @return   {Rx.Observable.<any>}                  Exports of the plugin
+   * @param    idOrPluginInfo   Plugin to wait for
+   * @return                    Observable of exports of the plugin
    */
   waitFor( idOrPluginInfo: string | IPluginBaseInfo ) {
     return this.loaded$
@@ -168,28 +235,50 @@ export class PluginSystem {
   }
 
   /**
-   * Waits for a plugin and returns its exports as an Observable
-   * @param    {PluginInfo|string}   idOrPluginInfo   Plugin to wait for
-   * @return   {Rx.Observable.<any>}                  Exports of the plugin
+   * Waits for all given plugins and returns their exports as an `Observable`
+   * @param    idOrPluginInfo   Plugins to load and wait for
+   * @return                    Observable of exports of the plugins
    */
-  waitForAll( pluginIDs: string[] | IPluginBaseInfo[] ) {
-    return Observable.combineLatest( ( pluginIDs as any[] ).map( this.waitFor.bind( this ) ) );
+  waitForAll( idsOrPluginInfos: string[] | IPluginBaseInfo[] ) {
+    return Observable.combineLatest( ( idsOrPluginInfos as any[] ).map( this.waitFor.bind( this ) ) );
   }
 
+  /**
+   * Loads a plugin, either by string or an object with an id.
+   * Same as `pluginSystem.toLoad$.next(id)`.
+   * @param    idOrPluginInfo   Plugin to load
+   */
   load( idOrPluginInfo: string | IPluginBaseInfo ) {
     this.toLoad$.next( idOrPluginInfo );
   }
 
+  /**
+   * Loads a plugin, either by string or an object with an id and returns an observable
+   * that contains the plugin's exports.
+   * @param    idOrPluginInfo   Plugin to load
+   * @return                    Observable with exports of the plugin
+   */
   loadAndWaitFor( idOrPluginInfo: string | IPluginBaseInfo ) {
     this.load( idOrPluginInfo );
     return this.waitFor( idOrPluginInfo );
   }
 
+  /**
+   * Loads all plugins in parallel, either by strings or objects with an id and
+   * returns an observable that contains the plugins' exports.
+   * @param    idsOrPluginInfos   Plugins to load
+   * @return                      Observable with exports of the plugins
+   */
   loadAndWaitForAll( idsOrPluginInfos: string[] | IPluginBaseInfo[] ) {
     ( idsOrPluginInfos as any[] ).forEach( this.load.bind( this ) );
     return this.waitForAll( idsOrPluginInfos );
   }
 
+  /**
+   * Unloads a plugin, either by string or an object with an id.
+   * Same as `pluginSystem.toUnload$.next(id)`.
+   * @param    idOrPluginInfo   Plugin to unload
+   */
   unload( idOrPluginInfo: string | IPluginBaseInfo ) {
     this.toUnload$.next( idOrPluginInfo );
   }
