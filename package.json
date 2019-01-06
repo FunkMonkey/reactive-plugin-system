@@ -31,21 +31,22 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "gulp build",
     "build:docs": "gulp build:docs",
-    "watch:build": "tsc --watch"
+    "watch:build": "gulp watch:build"
   },
   "devDependencies": {
-    "eslint": "4.11.0",
+    "eslint": "5.12.0",
     "eslint-config-funkmonkey": "0.0.1",
-    "eslint-plugin-import": "2.8.0",
-    "gulp": "3.9.1",
+    "eslint-plugin-import": "2.14.0",
+    "gulp": "4.0.0",
+    "gulp-sourcemaps": "2.6.4",
     "gulp-typedoc": "2.2.0",
-    "gulp-util": "3.0.8",
+    "gulp-typescript" : "5.0.0",
     "typedoc": "0.11.1",
     "typedoc-plugin-external-module-name": "1.1.1",
-    "typescript": "2.7.1",
-    "typescript-eslint-parser": "13.0.0",
+    "typescript": "3.2.2",
+    "typescript-eslint-parser": "21.0.2",
     "@types/node": "9.4.6"
   },
   "dependencies": {
