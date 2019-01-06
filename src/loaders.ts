@@ -2,14 +2,14 @@
  * @module PluginSystem
  */
 
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import { IPluginLoadInfo } from './iplugininfo';
 
 export default {
   /**
    * Returns the given argument as an Observable with a single element.
    */
-  standard: ( pluginInfo: IPluginLoadInfo ) => Observable.of( pluginInfo ),
+  standard: ( pluginInfo: IPluginLoadInfo ) => of( pluginInfo ),
 
   /**
    * Loads a plugin factory using `require`
@@ -19,6 +19,6 @@ export default {
   require( { id }: IPluginLoadInfo ) {
     // eslint-disable-next-line global-require, import/no-dynamic-require
     const mod = require( id );
-    return Observable.of( { id, factory: mod.default || mod } );
+    return of( { id, factory: mod.default || mod } );
   }
 };

@@ -2,7 +2,8 @@
  * @module PluginSystem
  */
 
-import { Observable, ReplaySubject, Subscriber, Subscription } from 'rxjs';
+import { Observable, ReplaySubject, Subscriber, Subscription, combineLatest } from 'rxjs';
+import { filter, first, flatMap, map, publishReplay, refCount, tap } from 'rxjs/operators';
 import { IPluginBaseInfo, IPluginLoadInfo, IPlugin } from './iplugininfo';
 import _factoryLoaders from './loaders';
 
@@ -17,7 +18,7 @@ export const factoryLoaders = _factoryLoaders;
  */
 function digestGetFactoryResult( result: Observable<IPluginLoadInfo> ) {
   // TODO: handle plain objects & promises
-  return result.first();
+  return result.pipe( first() );
 }
 
 /**
@@ -25,7 +26,7 @@ function digestGetFactoryResult( result: Observable<IPluginLoadInfo> ) {
  * @hidden
  */
 function digestFactoryResult( result: Observable<any> ) {
-  return result.first();
+  return result.pipe( first() );
 }
 
 /**
@@ -159,20 +160,21 @@ export class PluginSystem {
     this.toLoad$ = new ReplaySubject();
     this.toUnload$ = new ReplaySubject();
 
-    this.loaded$ = this.toLoad$
-      .map( stringToPluginInfo )
+    this.loaded$ = this.toLoad$.pipe(
+      map( stringToPluginInfo ),
       // TODO: handle already loaded plugins
-      .flatMap( pluginLoadInfo => digestGetFactoryResult( this.getFactory( pluginLoadInfo ) ) )
-      .flatMap( pluginLoadInfo => this._loadPlugin( pluginLoadInfo ) )
-      .publishReplay()
-      .refCount(); // TODO: use `shareReplay`
+      flatMap( pluginLoadInfo => digestGetFactoryResult( this.getFactory( pluginLoadInfo ) ) ),
+      flatMap( pluginLoadInfo => this._loadPlugin( pluginLoadInfo ) ),
+      publishReplay(),
+      refCount() // TODO: use `shareReplay`
+    );
 
-
-    this.unloaded$ = this.toUnload$
-      .map( stringToPluginInfo )
-      .do( pluginInfo => { this.loaded[pluginInfo.id].subscription.unsubscribe(); } )
-      .publishReplay()
-      .refCount(); // TODO: use `shareReplay`
+    this.unloaded$ = this.toUnload$.pipe(
+      map( stringToPluginInfo ),
+      tap( pluginInfo => { this.loaded[pluginInfo.id].subscription.unsubscribe(); } ),
+      publishReplay(),
+      refCount() // TODO: use `shareReplay`
+    );
 
     // TODO: don't forward error to console here
     this.loadSubscription = this.loaded$
@@ -206,7 +208,7 @@ export class PluginSystem {
       // subscribe and keep subscription for later unloading
       const self = this;
       pluginInfo.subscription = plugin$
-        .let( beforeUnsubscribe( () => delete this.loaded[pluginInfo.id] ) )
+        .pipe( beforeUnsubscribe( () => delete this.loaded[pluginInfo.id] ) )
         .subscribe( {
           next( pluginExports ) {
             pluginInfo.exports = pluginExports;
@@ -228,10 +230,11 @@ export class PluginSystem {
    * @return                    Observable of exports of the plugin
    */
   waitFor( idOrPluginInfo: string | IPluginBaseInfo ) {
-    return this.loaded$
-      .filter( ( { id } ) => id === getID( idOrPluginInfo ) )
-      .first()
-      .map( ( { exports } ) => exports );
+    return this.loaded$.pipe(
+      filter( ( { id } ) => id === getID( idOrPluginInfo ) ),
+      first(),
+      map( ( { exports } ) => exports )
+    );
   }
 
   /**
@@ -240,7 +243,8 @@ export class PluginSystem {
    * @return                    Observable of exports of the plugins
    */
   waitForAll( idsOrPluginInfos: string[] | IPluginBaseInfo[] ) {
-    return Observable.combineLatest( ( idsOrPluginInfos as any[] ).map( this.waitFor.bind( this ) ) );
+    const obs = ( idsOrPluginInfos as any[] ).map( this.waitFor.bind( this ) );
+    return combineLatest( obs );
   }
 
   /**
