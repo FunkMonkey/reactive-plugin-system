@@ -36,17 +36,18 @@
     "watch:build": "gulp watch:build"
   },
   "devDependencies": {
-    "eslint": "5.12.0",
-    "eslint-config-funkmonkey": "0.0.1",
-    "eslint-plugin-import": "2.14.0",
+    "eslint": "6.8.0",
+    "eslint-config-funkmonkey": "2.1.0",
+    "eslint-plugin-import": "2.20.1",
     "gulp": "4.0.0",
     "gulp-sourcemaps": "2.6.4",
     "gulp-typedoc": "2.2.0",
-    "gulp-typescript" : "5.0.0",
+    "gulp-typescript": "5.0.0",
     "typedoc": "0.11.1",
     "typedoc-plugin-external-module-name": "1.1.1",
     "typescript": "3.2.2",
-    "typescript-eslint-parser": "21.0.2",
+    "@typescript-eslint/parser": "2.0.0",
+    "@typescript-eslint/eslint-plugin": "2.20.0",
     "@types/node": "9.4.6"
   },
   "dependencies": {

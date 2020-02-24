@@ -2,8 +2,12 @@
  * @module PluginSystem
  */
 
-import { Observable, ReplaySubject, Subscriber, Subscription, combineLatest } from 'rxjs';
-import { filter, first, flatMap, map, publishReplay, refCount, tap } from 'rxjs/operators';
+import {
+  Observable, ReplaySubject, Subscriber, Subscription, combineLatest
+} from 'rxjs';
+import {
+  filter, first, flatMap, map, publishReplay, refCount, tap
+} from 'rxjs/operators';
 import { IPluginBaseInfo, IPluginLoadInfo, IPlugin } from './iplugininfo';
 import _factoryLoaders from './loaders';
 
@@ -48,8 +52,7 @@ function beforeUnsubscribe<T>( funcToCall: Function ) {
  * @hidden
  */
 function stringToPluginInfo( idOrPluginInfo: string | IPluginBaseInfo ) {
-  if ( typeof idOrPluginInfo === 'string' )
-    return { id: idOrPluginInfo };
+  if ( typeof idOrPluginInfo === 'string' ) return { id: idOrPluginInfo };
 
   return idOrPluginInfo;
 }
@@ -59,8 +62,7 @@ function stringToPluginInfo( idOrPluginInfo: string | IPluginBaseInfo ) {
  * @hidden
  */
 function getID( idOrPluginInfo : string | IPluginBaseInfo ) {
-  if ( typeof idOrPluginInfo === 'string' )
-    return idOrPluginInfo;
+  if ( typeof idOrPluginInfo === 'string' ) return idOrPluginInfo;
 
   return idOrPluginInfo.id;
 }
@@ -87,7 +89,7 @@ export interface IPluginSystemOptions {
    * asynchronously instantiate the given plugin id.
    */
   getFactory: IGetFactoryCB
- }
+}
 
 /**
  * Represents the plugin system
@@ -154,8 +156,7 @@ export class PluginSystem {
     this.getFactory = getFactory;
     this.loaded = {};
 
-    if ( !getFactory )
-      getFactory = factoryLoaders.standard;
+    if ( !getFactory ) getFactory = factoryLoaders.standard;
 
     this.toLoad$ = new ReplaySubject();
     this.toUnload$ = new ReplaySubject();
